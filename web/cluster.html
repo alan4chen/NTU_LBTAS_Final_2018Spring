@@ -102,7 +102,7 @@
         <!-- Page Content -->
         <div id="page-content-wrapper">
             <section id="top_title">
-                <h1 class="title"> 旅客分時流量 </h1>
+                <h1 class="title"> 各站點流量-分群 </h1>
                 <div id="map"> </div>
                     <div class="circle" id="c1"></div>
                     <label> 住宅區域 &nbsp &nbsp </label>
@@ -112,10 +112,10 @@
                     <label> 工作區域 &nbsp &nbsp</label>
                     <div class="circle" id="c4"></div>
                     <label> 混合區域 &nbsp &nbsp </label>
-                <div>
-                    <div class='cc' id="linechart_hour"> </div>
-                    <div class='cc' id="linechart_date"> </div>
-                </div>
+                <br />
+                <br />
+                <h2 class="title"> 站點3d分群圖 </h2>
+                <div id='ScatterDiv'></div>
             </section>
         </div>
         <!-- /#page-content-wrapper -->
@@ -138,8 +138,6 @@
         var colors_rgb = ["rgb(0, 0, 255)", "rgb(0, 128, 0)", "rgb(255, 0, 0)", "rgb(0, 254, 255)",
             "rgb(255,0,255)", "rgb(255,255,0)", "rgb(0, 0, 0)","rgb(255, 255, 255)"];
 
-
-        lc('松山機場');
 
         function initMap() {
             // Create the map.
@@ -183,83 +181,56 @@
         }
 
 
-        function lc(station) {
-            var trace1 = {
-              x: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-              y: metroflow[station]['d_i'],
-              name: '進站(In)',
-              type: 'scatter'
-            };
-            var trace2 = {
-              x: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-              y: metroflow[station]['d_o'],
-              name: '出站(Out)',
-              type: 'scatter'
-            };
-            var data = [trace1, trace2];
-            var layout = {
-              title: station + ' - 分日平均流量',
-              xaxis: {
-                title: '每週分日',
-                titlefont: {
-                  family: 'Courier New, monospace',
-                  size: 18,
-                  color: '#7f7f7f'
-                }
-              },
-              yaxis: {
-                title: 'Quantity of Flow',
-                titlefont: {
-                  family: 'Courier New, monospace',
-                  size: 18,
-                  color: '#7f7f7f'
-                }
-              }
-            };
+        // Potly 3D scatter
 
-            Plotly.newPlot('linechart_date', data, layout);
 
-            var x_template = [];
-            for(i = 6; i < 24; i++){
-                x_template.push(i);
+        var names = ['住宅區域', '娛樂區域', '工作區域', '混合區域'];
+
+        var traces = [];
+        for (i = 0; i < 4; i++) {
+            traces.push({
+                x:[],
+                y:[],
+                z:[],
+                text: [],
+                mode: 'markers+text',
+                type: 'scatter3d',
+                name: names[i],
+                line: {
+                    color: colors_rgb[i],
+                    width: 1
+                },
+                textposition: 'top center',
+//                textfont: {
+//                    family:  'Raleway, sans-serif'
+//                },
+                marker: { size: 4 }
+            });
+        }
+
+        for (var station in metroclass) {
+            var class_index = metroclass[station][0];
+            var x = metroclass[station][1];
+            var y = metroclass[station][2];
+            var z = metroclass[station][3];
+            traces[class_index]['x'].push(x);
+            traces[class_index]['y'].push(y);
+            traces[class_index]['z'].push(z);
+            traces[class_index]['text'].push(station);
+        }
+
+        var layout = {
+            margin: {
+    	        l: 0,
+    	        r: 0,
+    	        b: 0,
+    	        t: 0
             }
 
-            var trace1_2 = {
-              x: x_template,
-              y: metroflow[station]['h_i'],
-              name: '進站(In)',
-              type: 'scatter'
-            };
-            var trace2_2 = {
-              x: x_template,
-              y: metroflow[station]['h_o'],
-              name: '出站(Out)',
-              type: 'scatter'
-            };
-            var data2 = [trace1_2, trace2_2];
-            var layout2 = {
-              title: station + ' - 分時平均流量',
-              xaxis: {
-                title: '每日分時',
-                titlefont: {
-                  family: 'Courier New, monospace',
-                  size: 18,
-                  color: '#7f7f7f'
-                }
-              },
-              yaxis: {
-                title: 'Quantity of Flow',
-                titlefont: {
-                  family: 'Courier New, monospace',
-                  size: 18,
-                  color: '#7f7f7f'
-                }
-              }
-            };
 
+        };
 
-            Plotly.newPlot('linechart_hour', data2, layout2);
-        }
+        Plotly.newPlot('ScatterDiv', traces, layout);
     </script>
 
 </body>
